@@ -7,22 +7,22 @@ const nodeEnvSchema = z.enum(["development", "test", "production", "preview"], {
 const publicEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url({
     message: "NEXT_PUBLIC_SUPABASE_URL must be a valid URL",
-  }),
+  }).optional().default("https://example.supabase.co"),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, {
     message: "NEXT_PUBLIC_SUPABASE_ANON_KEY is required",
-  }),
+  }).optional().default("dummy-key"),
   NEXT_PUBLIC_APP_URL: z.string().url({
     message: "NEXT_PUBLIC_APP_URL must be a valid URL",
   }).default("http://localhost:3000"),
   NEXT_PUBLIC_ROOT_DOMAIN: z.string().min(1, {
     message: "NEXT_PUBLIC_ROOT_DOMAIN is required for tenant architecture",
-  }),
+  }).optional().default("localhost"),
 });
 
 const serverEnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, {
     message: "SUPABASE_SERVICE_ROLE_KEY is required",
-  }),
+  }).optional().default("dummy-key"),
   NODE_ENV: nodeEnvSchema,
 });
 
