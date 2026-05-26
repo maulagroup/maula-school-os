@@ -5,6 +5,8 @@ import Topbar from '@/components/layout/Topbar';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { resolveUserAccess } from '@/lib/middleware/auth';
 
+export const dynamic = 'force-dynamic';
+
 const tenantNavItems = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'PPDB', href: '/dashboard/ppdb' },
