@@ -3,7 +3,35 @@ import { PLATFORM_ADMIN_ROLES } from '@/lib/auth/constants';
 import type { UserAccessResult, MembershipWithRoleAndTenant } from '@/lib/auth/types';
 import type { PlatformRoleCode, TenantRoleCode } from '@/types/database';
 
-function formatMembership(raw: any): MembershipWithRoleAndTenant | null {
+interface RawMembershipRole {
+  role_code: string;
+  role_name: string;
+  role_scope: string;
+}
+
+interface RawMembershipTenant {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+}
+
+interface RawMembership {
+  id: string;
+  user_id: string;
+  tenant_id: string;
+  role_id: string;
+  status: string;
+  invited_by: string | null;
+  invited_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  roles: RawMembershipRole;
+  tenants: RawMembershipTenant;
+}
+
+function formatMembership(raw: RawMembership): MembershipWithRoleAndTenant | null {
   const roleScope = raw.roles.role_scope as 'platform' | 'tenant';
   
   let validatedRoleCode: PlatformRoleCode | TenantRoleCode | null = null;
@@ -176,7 +204,7 @@ export async function resolveUserAccess(supabase: SupabaseClient): Promise<UserA
   }
 
   const formattedMemberships = rawMemberships
-    .map((raw) => formatMembership(raw as RawMembership))
+    .map((raw: unknown) => formatMembership(raw as RawMembership))
     .filter((m): m is MembershipWithRoleAndTenant => m !== null);
 
   const filtered = filterMemberships(formattedMemberships);

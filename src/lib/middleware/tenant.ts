@@ -9,7 +9,7 @@ export async function resolveActiveTenantFromHostname(
 
   if (hostnameResolution.type === HostnameType.TENANT_SUBDOMAIN ||
       hostnameResolution.type === HostnameType.TENANT_CUSTOM_DOMAIN) {
-    const tenantSlug = hostnameResolution.subdomain;
+    const tenantSlug = hostnameResolution.tenantSubdomain;
     if (tenantSlug) {
       const { data: tenant } = await supabase
         .from('tenants')

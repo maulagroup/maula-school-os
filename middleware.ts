@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { config as appConfig } from "@/config";
@@ -23,9 +24,10 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setAll(cookiesToSet: any) {
-          cookiesToSet.forEach((cookie: any) =>
-            response.cookies.set(cookie.name, cookie.value, cookie.options)
+          cookiesToSet.forEach(({ name, value, options }: any) =>
+            response.cookies.set(name, value, options)
           );
         },
       },
