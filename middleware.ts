@@ -1,60 +1,85 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
-
-const publicRoutes = ['/login']
-const protectedRoutes = ['/dashboard']
+import { type NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { config } from "@/config";
+import { resolveUserAccess } from "@/lib/middleware/auth";
+import { resolveActiveTenantFromHostname } from "@/lib/middleware/tenant";
+import { getRouteType, RouteType, getRoleAwareRedirect } from "@/lib/middleware/route-access";
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  const hostname = request.headers.get("host") || "";
+  const routeType = getRouteType(request.nextUrl.pathname);
+
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    config.supabase.url,
+    config.supabase.anonKey,
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll()
+          return request.cookies.getAll();
         },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
+        setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+            response.cookies.set(name, value, options)
+          );
         },
       },
     }
-  )
+  );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const userAccess = await resolveUserAccess(supabase);
+  const url = request.nextUrl.clone();
 
-  const path = request.nextUrl.pathname
-  const isPublicRoute = publicRoutes.includes(path)
-  const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
-
-  if (isProtectedRoute && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  if (routeType === RouteType.AUTH && userAccess.isAuthenticated) {
+    const redirectPath = getRoleAwareRedirect(
+      userAccess.isPlatformAdmin,
+      userAccess.activeRoleCode
+    );
+    url.pathname = redirectPath;
+    return NextResponse.redirect(url);
   }
 
-  if (isPublicRoute && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+  const requiresAuth =
+    routeType === RouteType.TENANT_PORTAL ||
+    routeType === RouteType.PLATFORM_PORTAL ||
+    routeType === RouteType.PPDB;
+
+  if (requiresAuth && !userAccess.isAuthenticated) {
+    url.pathname = "/login";
+    url.searchParams.set("callbackUrl", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
   }
 
-  return supabaseResponse
+  if (requiresAuth && !userAccess.hasValidMembership) {
+    url.pathname = "/unauthorized";
+    return NextResponse.redirect(url);
+  }
+
+  if (routeType === RouteType.PLATFORM_PORTAL && !userAccess.isPlatformAdmin) {
+    url.pathname = "/forbidden";
+    return NextResponse.redirect(url);
+  }
+
+  const tenantFromHostname = await resolveActiveTenantFromHostname(
+    hostname,
+    supabase
+  );
+
+  if (tenantFromHostname) {
+    response.headers.set("x-tenant-id", tenantFromHostname.tenantId);
+    response.headers.set("x-tenant-status", tenantFromHostname.tenantStatus);
+  }
+
+  return response;
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|json)$).*)",
   ],
-}
+};
