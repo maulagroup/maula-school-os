@@ -11,7 +11,7 @@ export default function TestSupabasePage() {
     async function testConnection() {
       try {
         const supabase = createBrowserSupabaseClient();
-        const { data, error } = await supabase.from('roles').select('count');
+        const { error } = await supabase.from('roles').select('count');
         
         if (error) {
           setStatus('error');

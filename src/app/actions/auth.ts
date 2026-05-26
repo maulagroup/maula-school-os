@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { loginSchema, type LoginInput } from '@/lib/auth/schemas';
+import { loginSchema } from '@/lib/auth/schemas';
 import type { AuthActionResult } from '@/lib/auth/types';
 import { getRoleAwareRedirect } from '@/lib/middleware/route-access';
 import { resolveUserAccess } from '@/lib/middleware/auth';

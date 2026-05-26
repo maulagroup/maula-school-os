@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation';
 import Shell from '@/components/layout/Shell';
 import Sidebar from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
-import { getAuthContext } from '@/lib/auth/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { resolveUserAccess } from '@/lib/middleware/auth';
 
 const platformNavItems = [
   { label: 'Dashboard', href: '/platform' },
@@ -16,31 +16,14 @@ export default async function PlatformLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const authContext = await getAuthContext();
+  const supabase = await createServerSupabaseClient();
+  const userAccess = await resolveUserAccess(supabase);
 
-  if (!authContext) {
+  if (!userAccess.isAuthenticated) {
     redirect('/login');
   }
 
-  const supabase = await createServerSupabaseClient();
-  const { data: memberships } = await supabase
-    .from('memberships')
-    .select(`
-      roles!inner (
-        role_code,
-        role_scope
-      )
-    `)
-    .eq('user_id', authContext.user.id)
-    .eq('status', 'active')
-    .is('deleted_at', null);
-
-  const isPlatformAdmin = memberships?.some(
-    (m) => m.roles.role_scope === 'platform' &&
-           ['super_admin_platform', 'support_admin', 'finance_admin'].includes(m.roles.role_code)
-  );
-
-  if (!isPlatformAdmin) {
+  if (!userAccess.isPlatformAdmin) {
     redirect('/forbidden');
   }
 
@@ -54,7 +37,7 @@ export default async function PlatformLayout({
       }
       topbar={
         <Topbar
-          userEmail={authContext.user.email}
+          userEmail={userAccess.activeTenantName || 'User'}
         />
       }
     >

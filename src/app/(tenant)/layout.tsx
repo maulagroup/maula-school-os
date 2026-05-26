@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation';
 import Shell from '@/components/layout/Shell';
 import Sidebar from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
-import { getAuthContext } from '@/lib/auth/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { resolveUserAccess } from '@/lib/middleware/auth';
 
 const tenantNavItems = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -17,34 +17,14 @@ export default async function TenantLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const authContext = await getAuthContext();
+  const supabase = await createServerSupabaseClient();
+  const userAccess = await resolveUserAccess(supabase);
 
-  if (!authContext) {
+  if (!userAccess.isAuthenticated) {
     redirect('/login');
   }
 
-  const supabase = await createServerSupabaseClient();
-  const { data: memberships } = await supabase
-    .from('memberships')
-    .select(`
-      id,
-      tenant_id,
-      roles!inner (
-        role_code,
-        role_name
-      ),
-      tenants!inner (
-        id,
-        name
-      )
-    `)
-    .eq('user_id', authContext.user.id)
-    .eq('status', 'active')
-    .is('deleted_at', null);
-
-  const activeMembership = memberships?.[0];
-
-  if (!activeMembership) {
+  if (!userAccess.hasValidMembership) {
     redirect('/unauthorized');
   }
 
@@ -58,8 +38,8 @@ export default async function TenantLayout({
       }
       topbar={
         <Topbar
-          userEmail={authContext.user.email}
-          tenantName={activeMembership.tenants.name}
+          userEmail={userAccess.activeTenantName || 'User'}
+          tenantName={userAccess.activeTenantName}
         />
       }
     >

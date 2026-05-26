@@ -3,52 +3,20 @@ import { PLATFORM_ADMIN_ROLES } from '@/lib/auth/constants';
 import type { UserAccessResult, MembershipWithRoleAndTenant } from '@/lib/auth/types';
 import type { PlatformRoleCode, TenantRoleCode } from '@/types/database';
 
-interface RawMembership {
-  id: string;
-  user_id: string;
-  tenant_id: string;
-  role_id: string;
-  status: string;
-  invited_by: string | null;
-  invited_at: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  roles: {
-    role_code: string;
-    role_name: string;
-    role_scope: string;
-  };
-  tenants: {
-    id: string;
-    name: string;
-    slug: string;
-    status: string;
-  };
-}
-
-function validateRoleCode(roleCode: string, scope: 'platform'): PlatformRoleCode | null;
-function validateRoleCode(roleCode: string, scope: 'tenant'): TenantRoleCode | null;
-function validateRoleCode(
-  roleCode: string,
-  scope: 'platform' | 'tenant'
-): PlatformRoleCode | TenantRoleCode | null {
-  if (scope === 'platform') {
-    if (['super_admin_platform', 'support_admin', 'finance_admin'].includes(roleCode)) {
-      return roleCode as PlatformRoleCode;
-    }
-  }
-  if (scope === 'tenant') {
-    if (['school_owner', 'school_admin', 'teacher', 'student', 'parent'].includes(roleCode)) {
-      return roleCode as TenantRoleCode;
-    }
-  }
-  return null;
-}
-
-function formatMembership(raw: RawMembership): MembershipWithRoleAndTenant | null {
+function formatMembership(raw: any): MembershipWithRoleAndTenant | null {
   const roleScope = raw.roles.role_scope as 'platform' | 'tenant';
-  const validatedRoleCode = validateRoleCode(raw.roles.role_code, roleScope);
+  
+  let validatedRoleCode: PlatformRoleCode | TenantRoleCode | null = null;
+  
+  if (roleScope === 'platform') {
+    if (['super_admin_platform', 'support_admin', 'finance_admin'].includes(raw.roles.role_code)) {
+      validatedRoleCode = raw.roles.role_code as PlatformRoleCode;
+    }
+  } else if (roleScope === 'tenant') {
+    if (['school_owner', 'school_admin', 'teacher', 'student', 'parent'].includes(raw.roles.role_code)) {
+      validatedRoleCode = raw.roles.role_code as TenantRoleCode;
+    }
+  }
 
   if (!validatedRoleCode) {
     return null;

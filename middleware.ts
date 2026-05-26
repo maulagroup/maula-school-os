@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { config } from "@/config";
+import { config as appConfig } from "@/config";
 import { resolveUserAccess } from "@/lib/middleware/auth";
 import { resolveActiveTenantFromHostname } from "@/lib/middleware/tenant";
 import { getRouteType, RouteType, getRoleAwareRedirect } from "@/lib/middleware/route-access";
@@ -16,16 +16,16 @@ export async function middleware(request: NextRequest) {
   });
 
   const supabase = createServerClient(
-    config.supabase.url,
-    config.supabase.anonKey,
+    appConfig.supabase.url,
+    appConfig.supabase.anonKey,
     {
       cookies: {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+        setAll(cookiesToSet: any) {
+          cookiesToSet.forEach((cookie: any) =>
+            response.cookies.set(cookie.name, cookie.value, cookie.options)
           );
         },
       },
