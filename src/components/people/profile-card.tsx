@@ -1,12 +1,12 @@
 import Card from '@/components/ui/card';
-import StatusBadge from '@/components/ui/status-badge';
+import StatusBadge, { type StatusVariant } from '@/components/ui/status-badge';
 
 export interface ProfileCardProps {
   name?: string;
   code?: string;
   role?: string;
   status?: string;
-  statusVariant?: 'success' | 'warning' | 'danger' | 'info' | 'default';
+  statusVariant?: StatusVariant;
   avatar?: React.ReactNode;
   children?: React.ReactNode;
 }

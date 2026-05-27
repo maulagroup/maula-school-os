@@ -21,9 +21,9 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
   late: 'Terlambat',
 };
 
-export default function AttendanceStatusBadge({ status }: AttendanceStatusBadgeProps) {
+export default function AttendanceStatusBadge({ status, size = 'md' }: AttendanceStatusBadgeProps) {
   return (
-    <StatusBadge variant={STATUS_VARIANTS[status]}>
+    <StatusBadge variant={STATUS_VARIANTS[status]} size={size}>
       {STATUS_LABELS[status]}
     </StatusBadge>
   );

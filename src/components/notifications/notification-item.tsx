@@ -1,4 +1,4 @@
-import StatusBadge from '@/components/ui/status-badge';
+import StatusBadge, { type StatusVariant } from '@/components/ui/status-badge';
 
 export interface Notification {
   id: string;
@@ -15,7 +15,7 @@ export interface NotificationItemProps {
   onMarkAsRead?: (id: string) => void;
 }
 
-const typeColors: Record<string, 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
+const typeColors: Record<string, StatusVariant> = {
   attendance: 'success',
   lms: 'primary',
   grading: 'info',

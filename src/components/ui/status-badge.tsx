@@ -16,7 +16,7 @@ export default function StatusBadge({ children, variant = 'default', className =
   };
 
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${variantClasses[variant]} ${className}`}>
+    <span className={`inline-flex items-center rounded-full font-medium ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}>
       {children}
     </span>
   );
