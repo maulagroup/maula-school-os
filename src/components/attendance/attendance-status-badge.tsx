@@ -1,11 +1,12 @@
-import StatusBadge from '@/components/ui/status-badge';
+import StatusBadge, { type StatusVariant } from '@/components/ui/status-badge';
 import type { AttendanceStatus } from '@/types/database';
 
 export interface AttendanceStatusBadgeProps {
   status: AttendanceStatus;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-const STATUS_VARIANTS: Record<AttendanceStatus, 'success' | 'warning' | 'danger' | 'info' | 'default'> = {
+const STATUS_VARIANTS: Record<AttendanceStatus, StatusVariant> = {
   present: 'success',
   absent: 'danger',
   sick: 'warning',

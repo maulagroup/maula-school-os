@@ -14,7 +14,7 @@ const statusConfig: Record<PaymentStatus, { label: string; variant: StatusVarian
   overdue: { label: 'Jatuh Tempo', variant: 'danger' },
 };
 
-export default function PaymentStatusBadge({ status, size }: PaymentStatusBadgeProps) {
+export default function PaymentStatusBadge({ status, size = 'md' }: PaymentStatusBadgeProps) {
   const config = statusConfig[status];
-  return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
+  return <StatusBadge variant={config.variant} size={size}>{config.label}</StatusBadge>;
 }
