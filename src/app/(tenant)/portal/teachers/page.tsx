@@ -1,11 +1,13 @@
 import PageHeader from '@/components/ui/page-header';
 import Card from '@/components/ui/card';
 import EmptyState from '@/components/ui/empty-state';
-import DataTable from '@/components/data-display/data-table';
+import DataTable, { type Column } from '@/components/data-display/data-table';
 import { demoTeachers } from '@/lib/demo/data';
 
+type TeacherRow = typeof demoTeachers[number];
+
 export default function TeachersPage() {
-  const columns = [
+  const columns: Column<TeacherRow>[] = [
     { key: 'name', header: 'Nama' },
     { key: 'nip', header: 'NIP' },
     { key: 'subject', header: 'Mata Pelajaran' },
