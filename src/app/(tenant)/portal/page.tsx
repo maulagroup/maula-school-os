@@ -63,7 +63,7 @@ function ActivityItem({ activity }: { activity: DemoActivity }) {
 }
 
 export default function TenantPortalDashboard() {
-  const { userAccess } = useTenant();
+  const { currentTenant, currentRole } = useTenant();
   const onboardingStatus = 'onboarding_incomplete';
   const onboardingConfig = STATUS_CONFIG[onboardingStatus as keyof typeof STATUS_CONFIG];
 
@@ -121,11 +121,11 @@ export default function TenantPortalDashboard() {
   return (
     <div>
       <PageHeader
-        title={`Selamat Datang di ${userAccess?.activeTenantName || 'Portal Sekolah'}`}
+        title={`Selamat Datang di ${currentTenant?.name || 'Portal Sekolah'}`}
       >
         <div className="flex items-center gap-2">
           <StatusBadge variant="success">
-            {userAccess?.activeRoleCode?.replace(/_/g, ' ') || 'School Admin'}
+            {currentRole?.replace(/_/g, ' ') || 'School Admin'}
           </StatusBadge>
           <StatusBadge variant={onboardingConfig.variant}>
             {onboardingConfig.label}
