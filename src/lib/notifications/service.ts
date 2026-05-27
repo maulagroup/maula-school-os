@@ -1,9 +1,8 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/types/database';
-
-const supabase = createClientComponentClient<Database>();
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import type { Notification, Announcement } from '@/types/database';
 
 export async function getUserNotifications(userId: string, tenantId: string) {
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
@@ -12,15 +11,12 @@ export async function getUserNotifications(userId: string, tenantId: string) {
     .order('created_at', { ascending: false })
     .limit(50);
 
-  if (error) {
-    console.error('Error fetching notifications:', error);
-    return [];
-  }
-
-  return data || [];
+  if (error) throw error;
+  return data as Notification[];
 }
 
 export async function getUnreadCount(userId: string, tenantId: string) {
+  const supabase = await createServerSupabaseClient();
   const { count, error } = await supabase
     .from('notifications')
     .select('*', { count: 'exact', head: true })
@@ -28,27 +24,22 @@ export async function getUnreadCount(userId: string, tenantId: string) {
     .eq('tenant_id', tenantId)
     .eq('status', 'unread');
 
-  if (error) {
-    console.error('Error fetching unread count:', error);
-    return 0;
-  }
-
+  if (error) throw error;
   return count || 0;
 }
 
 export async function markAsRead(notificationId: string) {
+  const supabase = await createServerSupabaseClient();
   const { error } = await supabase
     .from('notifications')
     .update({ status: 'read', read_at: new Date().toISOString() })
     .eq('id', notificationId);
 
-  if (error) {
-    console.error('Error marking notification as read:', error);
-    throw error;
-  }
+  if (error) throw error;
 }
 
 export async function markAllAsRead(userId: string, tenantId: string) {
+  const supabase = await createServerSupabaseClient();
   const { error } = await supabase
     .from('notifications')
     .update({ status: 'read', read_at: new Date().toISOString() })
@@ -56,13 +47,11 @@ export async function markAllAsRead(userId: string, tenantId: string) {
     .eq('tenant_id', tenantId)
     .eq('status', 'unread');
 
-  if (error) {
-    console.error('Error marking all as read:', error);
-    throw error;
-  }
+  if (error) throw error;
 }
 
 export async function getAnnouncements(tenantId: string) {
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('announcements')
     .select('*')
@@ -72,10 +61,6 @@ export async function getAnnouncements(tenantId: string) {
     .order('published_at', { ascending: false })
     .limit(20);
 
-  if (error) {
-    console.error('Error fetching announcements:', error);
-    return [];
-  }
-
-  return data || [];
+  if (error) throw error;
+  return data as Announcement[];
 }

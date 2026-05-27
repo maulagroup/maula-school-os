@@ -481,6 +481,176 @@ export interface ClassroomStream {
   deletedAt?: Date;
 }
 
+export type NotificationType = "attendance" | "lms" | "grading" | "onboarding" | "system" | "announcement";
+export type NotificationStatus = "unread" | "read" | "dismissed";
+export type AnnouncementPriority = "low" | "normal" | "high" | "urgent";
+export type NotificationChannel = "in_app" | "email" | "whatsapp" | "push";
+export type PPDBStatus = "draft" | "submitted" | "verified" | "accepted" | "rejected" | "cancelled";
+export type PPDBSchoolLevel = "sd" | "smp" | "sma" | "smk";
+export type PPDBGender = "male" | "female";
+export type BillingType = "spp" | "registration" | "building" | "exam" | "activity" | "custom";
+export type BillingFrequency = "one_time" | "monthly" | "quarterly" | "semesterly" | "yearly";
+export type PaymentStatus = "unpaid" | "partial" | "paid" | "overdue";
+export type PaymentMethod = "cash" | "bank_transfer" | "va" | "qris" | "credit_card" | "other";
+
+export interface Notification {
+  id: string;
+  tenantId: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  content?: string;
+  url?: string;
+  status: NotificationStatus;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  readAt?: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+}
+
+export interface Announcement {
+  id: string;
+  tenantId: string;
+  createdBy?: string;
+  title: string;
+  content?: string;
+  priority: AnnouncementPriority;
+  isPinned: boolean;
+  isPublic: boolean;
+  targetRoles?: string[];
+  targetClasses?: string[];
+  publishedAt?: Date;
+  expiresAt?: Date;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+}
+
+export interface NotificationPreference {
+  id: string;
+  userId: string;
+  tenantId: string;
+  type: NotificationType;
+  channel: NotificationChannel;
+  enabled: boolean;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PPDBPeriod {
+  id: string;
+  tenantId: string;
+  name: string;
+  academicYearId?: string;
+  schoolLevel: PPDBSchoolLevel;
+  startDate: Date;
+  endDate: Date;
+  isActive: boolean;
+  quota?: number;
+  description?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+}
+
+export interface PPDBRegistration {
+  id: string;
+  tenantId: string;
+  registrationNumber?: string;
+  status: PPDBStatus;
+  schoolLevel: PPDBSchoolLevel;
+  grade?: number;
+  fullName: string;
+  nickName?: string;
+  gender: PPDBGender;
+  birthPlace: string;
+  birthDate: Date;
+  nisn?: string;
+  previousSchool?: string;
+  fatherName?: string;
+  fatherPhone?: string;
+  fatherOccupation?: string;
+  motherName?: string;
+  motherPhone?: string;
+  motherOccupation?: string;
+  guardianName?: string;
+  guardianPhone?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
+  submittedAt?: Date;
+  verifiedAt?: Date;
+  acceptedAt?: Date;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+}
+
+export interface BillingCategory {
+  id: string;
+  tenantId: string;
+  name: string;
+  code?: string;
+  type: BillingType;
+  frequency: BillingFrequency;
+  defaultAmount?: number;
+  description?: string;
+  isActive: boolean;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+}
+
+export interface StudentBill {
+  id: string;
+  tenantId: string;
+  studentProfileId: string;
+  academicYearId?: string;
+  classId?: string;
+  billingCategoryId?: string;
+  billNumber?: string;
+  type: BillingType;
+  title: string;
+  description?: string;
+  amount: number;
+  paidAmount: number;
+  status: PaymentStatus;
+  dueDate?: Date;
+  periodMonth?: number;
+  periodYear?: number;
+  notes?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+}
+
+export interface Payment {
+  id: string;
+  tenantId: string;
+  studentBillId: string;
+  studentProfileId: string;
+  paymentNumber?: string;
+  amount: number;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  paymentDate: Date;
+  referenceNumber?: string;
+  notes?: string;
+  metadata?: Record<string, unknown>;
+  createdBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+}
+
 export type PlatformRoleCode = "super_admin_platform" | "support_admin" | "finance_admin";
 export type TenantRoleCode = "school_owner" | "school_admin" | "teacher" | "student" | "parent";
 export type RoleCode = PlatformRoleCode | TenantRoleCode;

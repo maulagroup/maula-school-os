@@ -1,9 +1,8 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/types/database';
-
-const supabase = createClientComponentClient<Database>();
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import type { PPDBPeriod, PPDBRegistration } from '@/types/database';
 
 export async function getPPDBPeriods(tenantId: string) {
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('ppdb_periods')
     .select('*')
@@ -11,15 +10,12 @@ export async function getPPDBPeriods(tenantId: string) {
     .is('deleted_at', null)
     .order('start_date', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching PPDB periods:', error);
-    return [];
-  }
-
-  return data || [];
+  if (error) throw error;
+  return data as PPDBPeriod[];
 }
 
 export async function getActivePPDBPeriod(tenantId: string) {
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('ppdb_periods')
     .select('*')
@@ -28,14 +24,12 @@ export async function getActivePPDBPeriod(tenantId: string) {
     .is('deleted_at', null)
     .single();
 
-  if (error || !data) {
-    return null;
-  }
-
-  return data;
+  if (error && error.code !== 'PGRST116') throw error;
+  return data as PPDBPeriod | null;
 }
 
 export async function getPPDBRegistrations(tenantId: string) {
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('ppdb_registrations')
     .select('*')
@@ -43,25 +37,18 @@ export async function getPPDBRegistrations(tenantId: string) {
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching PPDB registrations:', error);
-    return [];
-  }
-
-  return data || [];
+  if (error) throw error;
+  return data as PPDBRegistration[];
 }
 
 export async function getRegistrationCounts(tenantId: string) {
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('ppdb_registrations')
     .select('status', { count: 'exact' })
     .eq('tenant_id', tenantId)
     .is('deleted_at', null);
 
-  if (error) {
-    console.error('Error fetching registration counts:', error);
-    return { total: 0, submitted: 0, accepted: 0 };
-  }
-
+  if (error) throw error;
   return { total: data?.length || 0, submitted: 0, accepted: 0 };
 }
