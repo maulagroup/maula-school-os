@@ -31,6 +31,10 @@ export interface UserAccessResult {
   activeTenantId?: string;
   activeRoleCode?: PlatformRoleCode | TenantRoleCode;
   activeTenantName?: string;
+  currentUser?: {
+    id: string;
+    email?: string;
+  };
   allMemberships: MembershipWithRoleAndTenant[];
   activeMemberships: MembershipWithRoleAndTenant[];
   pendingMemberships: MembershipWithRoleAndTenant[];

@@ -191,6 +191,10 @@ export async function resolveUserAccess(supabase: SupabaseClient): Promise<UserA
       isAuthenticated: true,
       hasValidMembership: false,
       isPlatformAdmin: false,
+      currentUser: {
+        id: session.user.id,
+        email: session.user.email,
+      },
       activeMemberships: [],
       platformMemberships: [],
       tenantMemberships: [],
@@ -221,6 +225,10 @@ export async function resolveUserAccess(supabase: SupabaseClient): Promise<UserA
     isAuthenticated: true,
     hasValidMembership: filtered.active.length > 0,
     isPlatformAdmin,
+    currentUser: {
+      id: session.user.id,
+      email: session.user.email,
+    },
     activeTenantId: activeTenant.activeTenantId,
     activeRoleCode: activeTenant.activeRoleCode || currentPlatformMembership?.roles.roleCode,
     activeTenantName: activeTenant.activeTenantName,

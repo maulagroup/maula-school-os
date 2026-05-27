@@ -40,7 +40,7 @@ export default async function PlatformLayout({
       }
       topbar={
         <Topbar
-          userEmail={userAccess.activeTenantName || 'User'}
+          userEmail={userAccess.currentUser?.email || 'User'}
         />
       }
     >
