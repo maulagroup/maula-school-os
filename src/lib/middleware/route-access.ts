@@ -28,23 +28,21 @@ export function getRouteType(pathname: string): RouteType {
 
 export function getRoleAwareRedirect(
   isPlatformAdmin: boolean,
-  activeRoleCode?: string
+  activeRoleCode?: string,
+  hasValidMembership?: boolean
 ): string {
+  console.log('[getRoleAwareRedirect] Input:', { isPlatformAdmin, activeRoleCode, hasValidMembership });
+
   if (isPlatformAdmin) {
+    console.log('[getRoleAwareRedirect] Redirecting to /platform (platform admin)');
     return "/platform";
   }
 
-  if (activeRoleCode === "school_owner" || activeRoleCode === "school_admin") {
-    return "/dashboard";
+  if (hasValidMembership || activeRoleCode) {
+    console.log('[getRoleAwareRedirect] Redirecting to /portal (tenant user)');
+    return "/portal";
   }
 
-  if (activeRoleCode === "teacher") {
-    return "/dashboard";
-  }
-
-  if (activeRoleCode === "student" || activeRoleCode === "parent") {
-    return "/dashboard";
-  }
-
+  console.log('[getRoleAwareRedirect] Redirecting to / (default)');
   return "/";
 }

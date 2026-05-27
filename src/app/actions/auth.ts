@@ -1,7 +1,9 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
+import { config } from '@/config';
 import { loginSchema } from '@/lib/auth/schemas';
 import type { AuthActionResult } from '@/lib/auth/types';
 import { getRoleAwareRedirect } from '@/lib/middleware/route-access';
@@ -15,6 +17,8 @@ export async function login(
   formData: FormData,
   callbackUrl?: string | null
 ): Promise<AuthActionResult> {
+  console.log('[login action] Starting login process');
+  
   const rawInput = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
@@ -24,6 +28,7 @@ export async function login(
 
   if (!validation.success) {
     const firstError = validation.error.errors[0];
+    console.log('[login action] Validation failed:', firstError);
     return {
       success: false,
       error: firstError?.message || 'Input tidak valid',
@@ -31,8 +36,26 @@ export async function login(
   }
 
   const { email, password } = validation.data;
+  console.log('[login action] Attempting sign in for:', email);
 
-  const supabase = await createServerSupabaseClient();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    config.supabase.url,
+    config.supabase.anonKey,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet: any[]) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
   const { error: authError, data } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -45,6 +68,7 @@ export async function login(
   });
 
   if (authError) {
+    console.log('[login action] Auth error:', authError);
     let errorMessage = 'Email atau password salah';
     
     if (authError.message.includes('Invalid login credentials')) {
@@ -59,20 +83,28 @@ export async function login(
     };
   }
 
+  console.log('[login action] Sign in successful, resolving user access');
   const userAccess = await resolveUserAccess(supabase);
+  console.log('[login action] User access resolved:', userAccess);
+  
   let redirectTo = callbackUrl || '/';
+  console.log('[login action] Initial redirectTo:', redirectTo);
 
   if (!callbackUrl || callbackUrl === '/' || callbackUrl === '/login') {
     redirectTo = getRoleAwareRedirect(
       userAccess.isPlatformAdmin,
-      userAccess.activeRoleCode
+      userAccess.activeRoleCode,
+      userAccess.hasValidMembership
     );
   }
+  
+  console.log('[login action] Final redirectTo:', redirectTo);
 
   await logSecurityEvent('login_success', {
     email,
     userId: data.user?.id,
     isPlatformAdmin: userAccess.isPlatformAdmin,
+    redirectTo,
   });
 
   return {
@@ -82,7 +114,23 @@ export async function login(
 }
 
 export async function logout(): Promise<never> {
-  const supabase = await createServerSupabaseClient();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    config.supabase.url,
+    config.supabase.anonKey,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet: any[]) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
   
   const { data: { session } } = await supabase.auth.getSession();
   
