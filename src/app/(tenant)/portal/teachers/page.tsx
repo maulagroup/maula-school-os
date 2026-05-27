@@ -6,9 +6,9 @@ import { demoTeachers } from '@/lib/demo/data';
 
 export default function TeachersPage() {
   const columns = [
-    { key: 'name', label: 'Nama' },
-    { key: 'nip', label: 'NIP' },
-    { key: 'subject', label: 'Mata Pelajaran' },
+    { key: 'name', header: 'Nama' },
+    { key: 'nip', header: 'NIP' },
+    { key: 'subject', header: 'Mata Pelajaran' },
   ];
 
   return (
@@ -17,7 +17,11 @@ export default function TeachersPage() {
       
       <Card>
         {demoTeachers.length > 0 ? (
-          <DataTable data={demoTeachers} columns={columns} />
+          <DataTable 
+            data={demoTeachers} 
+            columns={columns} 
+            keyExtractor={(item) => item.id}
+          />
         ) : (
           <EmptyState
             title="Belum ada guru"

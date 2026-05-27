@@ -6,9 +6,9 @@ import { demoStudents } from '@/lib/demo/data';
 
 export default function StudentsPage() {
   const columns = [
-    { key: 'name', label: 'Nama' },
-    { key: 'nis', label: 'NIS' },
-    { key: 'class', label: 'Kelas' },
+    { key: 'name', header: 'Nama' },
+    { key: 'nis', header: 'NIS' },
+    { key: 'class', header: 'Kelas' },
   ];
 
   return (
@@ -17,7 +17,11 @@ export default function StudentsPage() {
       
       <Card>
         {demoStudents.length > 0 ? (
-          <DataTable data={demoStudents} columns={columns} />
+          <DataTable 
+            data={demoStudents} 
+            columns={columns} 
+            keyExtractor={(item) => item.id}
+          />
         ) : (
           <EmptyState
             title="Belum ada siswa"
